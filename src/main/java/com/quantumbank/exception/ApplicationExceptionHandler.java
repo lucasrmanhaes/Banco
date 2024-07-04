@@ -22,7 +22,7 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.badRequest().body(mapErrors);
     }
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> userNotFound(UserNotFoundException error){
         Map<String, String> mapErrors = new HashMap<>();
         mapErrors.put("message", error.getMessage());
