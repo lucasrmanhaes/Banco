@@ -1,12 +1,15 @@
 package com.quantumbank.service;
 
 import com.quantumbank.dto.UserRegisterDto;
+import com.quantumbank.dto.UserViewDto;
 import com.quantumbank.exception.UserNotFoundException;
 import com.quantumbank.model.UserModel;
 import com.quantumbank.repository.UserRepository;
 import com.quantumbank.utils.KeepNonNullAttributes;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
@@ -16,47 +19,48 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public UserModel createUser(UserRegisterDto userRegisterDto) {
-        Optional<UserModel> userModelOptional = userRepository.findByEmail(userRegisterDto.getEmail());
-        if(userModelOptional.isEmpty()) {
+    public ResponseEntity<Object> createUser(UserRegisterDto userRegisterDto) {
+        Optional<UserModel> userModelOptionalUsingEmail = userRepository.findByEmail(userRegisterDto.getEmail());
+        Optional<UserModel> userModelOptionalUsingCpf = userRepository.findByCpf(userRegisterDto.getCpf());
+        if(userModelOptionalUsingEmail.isEmpty() && userModelOptionalUsingCpf.isEmpty()) {
             UserModel userModel = new UserModel();
             BeanUtils.copyProperties(userRegisterDto, userModel);
-            return userRepository.save(userModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new UserViewDto(userRepository.save(userModel)));
         }
         else{
-            throw new UserNotFoundException("Email is already registered");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
     }
 
-    public UserModel updateUser(UserModel userModel) {
-        Optional<UserModel> userModelOptional = userRepository.findByEmail(userModel.getEmail());
-        if(userModelOptional.isPresent()) {
-            UserModel user = userModelOptional.get();
+    public ResponseEntity<Object> updateUser(UserModel userModel) {
+        Optional<UserModel> userModelOptionalUsingEmail = userRepository.findByEmail(userModel.getEmail());
+        if(userModelOptionalUsingEmail.isPresent()) {
+            UserModel user = userModelOptionalUsingEmail.get();
             KeepNonNullAttributes.copyNonNullProperties(userModel, user);
-            return userRepository.save(user);
+            return ResponseEntity.status(HttpStatus.OK).body(new UserViewDto(userRepository.save(user)));
         }
         else {
-            throw new UserNotFoundException("User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User does not exist");
         }
     }
 
-    public UserModel findUserByEmail(String email){
+    public ResponseEntity<Object> findUserByEmail(String email){
         Optional<UserModel> userModelOptional = userRepository.findByEmail(email);
         if(userModelOptional.isPresent()) {
-            return userModelOptional.get();
+            return ResponseEntity.status(HttpStatus.OK).body(new UserViewDto(userModelOptional.get()));
         }
         else{
-            throw new UserNotFoundException("User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User does not exist");
         }
     }
 
-    public UserModel findUserByCpf(String cpf){
+    public ResponseEntity<Object> findUserByCpf(String cpf){
         Optional<UserModel> userModelOptional = userRepository.findByCpf(cpf);
         if(userModelOptional.isPresent()) {
-            return userModelOptional.get();
+            return ResponseEntity.status(HttpStatus.OK).body(new UserViewDto(userModelOptional.get()));
         }
         else{
-            throw new UserNotFoundException("User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User does not exist");
         }
     }
 
