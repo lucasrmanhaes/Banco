@@ -1,12 +1,9 @@
 package com.quantumbank.controller;
 
 import com.quantumbank.dto.UserRegisterDto;
-import com.quantumbank.dto.UserViewDto;
 import com.quantumbank.model.UserModel;
 import com.quantumbank.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
